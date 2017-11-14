@@ -1,0 +1,35 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import glob
+####Daily calculations
+
+# Raw data import - must change location of raw files
+ip_dir ="z:/Data Analysis/RLH BMS Energy Data/MCC raw data/"
+allFiles = glob.glob(ip_dir + "/*.csv")
+
+# Data export - must change location of export file
+out_dir = "z:/Data Analysis/RLH BMS Energy Data/MCC raw data/Output"
+outfile = out_dir + '/rlhnb_bms_v4_daily_totals.csv'
+
+big_frame = pd.DataFrame()
+dfs = []
+
+for file in allFiles:
+    rlhnb_bms_merged = pd.read_csv(file, parse_dates=['Date/Time'], dayfirst=False, infer_datetime_format=True, 
+                                   na_values=['-','0'], index_col=['Date/Time'], thousands=',') #===> Our raw file
+    router = str(file[-17:-13]) #1101, 1102, 1601, 1605, 1605, 1606, 1608
+    rlhnb_bms_merged = rlhnb_bms_merged.convert_objects(convert_numeric=True)
+    daily_kwh = lambda x: x.max() - x.min() 
+    transformed = rlhnb_bms_merged.groupby(lambda x: x.date()).apply(daily_kwh)
+    pivot = transformed.T  
+    pivot['MCC'] = router
+    pivot.append(pivot['MCC'])
+    pivot.index.name = 'Meter'
+    pivot = pivot.reset_index(level=None)
+    dfs.append(pivot)
+            
+#===>Concatenate all data into one big DataFrame/daily amounts
+big_frame = pd.concat(dfs)
+big_frame
+#big_frame.to_csv(outfile, float_format="%.4f")
