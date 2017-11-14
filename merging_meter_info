@@ -1,0 +1,15 @@
+# Meter details, locations, properties
+meter_details_loc = 'z:/EEC/Python/RLH NB BMS/Meter details/MCC_locations_items.csv'
+meter_info = pd.read_csv(meter_details_loc)
+
+# Data export - must change location of export file
+out_dir = "z:/Data Analysis/RLH BMS Energy Data/MCC raw data/Output"
+outfile = out_dir + '/rlhnb_bms_v3_daily_totals.csv'
+
+
+big_frame['MCC'] = big_frame['MCC'].astype('int64') 
+
+properties_big_frame_merg = pd.merge(meter_info, big_frame, on=['Meter','MCC'])
+properties_big_frame_merg.head()
+
+#properties_big_frame_merg.to_csv(outfile, float_format="%.4f")
