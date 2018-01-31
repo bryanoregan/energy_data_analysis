@@ -1,0 +1,45 @@
+# Automated meter read devices are physically attached to electricity meters. 
+# They gather half hourly consumption data in kWh.
+# Different AMR devices can read different values for the same meter.
+# This program compares two different devices for the same meter, 
+# in this case data from BMSI/Orsis and the Supplier, EDF for a monthly period. - Started creating this 08/12/2017.
+
+import pandas as pd
+import numpy as np
+
+# Define raw data location
+bmsi_csv_loc ='C:/Users/bc967783/Desktop/Old laptop 250817 IPython Notebooks/' \
+            'AMR elect files comparison/BMSI data/BMSI Main incomer NB PFI xxx226.csv'
+edf_csv_loc ='C:/Users/bc967783/Desktop/Old laptop 250817 IPython Notebooks/' \
+            'AMR elect files comparison/EDF data/Main incomer NB PFI xxx226.csv'
+
+# Import raw data     
+bmsi_raw_csv = pd.read_csv(bmsi_csv_loc, parse_dates=['Time']) #===> Our raw file
+bmsi_ready = bmsi_raw_csv[['Time', 'Value']]
+bmsi_ready['Value'] = bmsi_ready['Value'].astype(float)
+bmsi_ready.columns.values[1] = 'Total kWh'
+print bmsi_ready.head()
+
+edf_raw_csv = pd.read_csv(edf_csv_loc) #, parse_dates=['Date'], dayfirst=True) #===> Our raw file
+print edf_raw_csv.head(3)
+#edf_raw_csv.dtypes
+
+from datetime import datetime
+import datetime
+
+edf_raw_csv_index = edf_raw_csv.set_index(['Date'])
+edf_raw_csv_index.columns.name = 'Time'
+edf_raw_csv_index_stack = edf_raw_csv_index.stack()
+edf_raw_csv_index_stack.head()
+edf_raw_csv_index_stack_reset = edf_raw_csv_index_stack.reset_index()
+
+edf_raw_csv_index_stack_reset.columns.values[2] = 'Total kWh'
+
+edf_pivot = edf_raw_csv_index_stack_reset
+
+edf_pivot['Time'] = pd.to_datetime(edf_pivot['Date'] + ' ' + edf_pivot['Time'])
+edf_pivot = edf_pivot.drop('Date', axis=1)
+print edf_pivot.head()
+
+print bmsi_ready.head()
+print edf_pivot.head()
